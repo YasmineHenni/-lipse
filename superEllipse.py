@@ -87,7 +87,7 @@ class SuperEllipse:
         # on copie datadict dans l'attribut specifications
         # attention a la nature de la copie
         
-        return self
+        self.specifications= deepcopy (datadict)
         
     def ecrireDansUnFichier(self,filename):
         "Pour ecrire la liste dans un fichier"
@@ -126,11 +126,19 @@ class SuperEllipse:
         # avec quelque chose du type wrn.warn("Pour le champs {}, on remplace {} par {}"....
         # En ajoute la spécifiation (en ecrasant celle qui existait si elle existait)
         #
+        if qualite== None:
+            self.ajouterUneValeurParDefaut(specificationAAjouter)
+        else:
+            for v in self.specifications.keys():
+                if v == specificationAAjouter and self.specifications[v] != self.specifications[specificationAAjouter]:
+
+                    wrn.warn("Pour le champs {}, on remplace {} par {}".format(specificationAAjouter,self.specifications[specificationAAjouter], qualite ))
+            self.specifications[specificationAAjouter]= qualite
+                    
 
 
 
-
-        pass
+        
     
     def ajouterDesSpecifications(self,dictEnPlus):
         '''
@@ -138,16 +146,40 @@ class SuperEllipse:
         '''
         # Pour chacun des elements de dictEnPlus
         # et ajout de chaque couple (clef,valeur) comme une specification
+        for k in dictEnPlus:
+            #self.specifications[k]= dictEnPlus[k]
+            self.ajouterUneSpecification(k,dictEnPlus[k])
 
 
-        pass
+        
         
     def estElleCoherente(self):
         # On verifie que les tous les parametres sont presents dans specification
         # On verifie qu'une specification est soit un parametre soit une propriete
+        specifi= self.specifications.keys()
+        paraManquant=[]
+        speciEnPlus=[]
+        rep= True
+        for p in self.parameters:
+            if p in specifi:
+                print('il y a tous les parametres')
+            else:
+                print('il manque un parametre {}'.format(p))
+                paraManquant.append(p)
+                rep=False
+        for s in specifi:
+            if s in self.parameters== False:
+                if s in self.properties == False:
+                    print('la specification {} est ni un parametre ni une property'.format(s))
+                    speciEnPlus.append(s)
+                    rep=False
+                else:
+                    print('la specification {} est une property'.format(s))
+            else: 
+                print('la specification {} est un parametre '.format(s))
+        return rep
 
-        
-        return False
+            
 
     def ajouterUneValeurParDefaut(self,uneSpecification):
         if uneSpecification == 'xy':
@@ -171,9 +203,15 @@ class SuperEllipse:
     def nettoyage(self):
         # on supprime les specification ne correspondant pas a des parametres/proprietes connus
         # on ajoute les parametres manquants
-
-        
-        pass
+        specifi= self.specifications.keys()
+        for p in self.parameters:
+            if p in specifi== False:
+                self.ajouterUneSpecification(p)
+                
+        for s in specifi:
+            if s in self.parameters== False:
+                if s in self.properties == False:
+                    del self.specifications[s]
 
     
     def afficher(self):
